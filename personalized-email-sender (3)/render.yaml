@@ -1,0 +1,11 @@
+services:
+  # Frontend web service
+  - type: web
+    name: mailpilot
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm run serve
+    envVars:
+      - key: NODE_ENV
+        value: production
+    autoDeploy: true

@@ -1,0 +1,454 @@
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { I18n } from 'i18n-js';
+import * as Localization from 'expo-localization';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// Define available languages
+export const LANGUAGES = {
+  en: { id: 'en', name: 'English', nativeName: 'English' },
+  es: { id: 'es', name: 'Spanish', nativeName: 'Español' },
+  fr: { id: 'fr', name: 'French', nativeName: 'Français' },
+  de: { id: 'de', name: 'German', nativeName: 'Deutsch' },
+  it: { id: 'it', name: 'Italian', nativeName: 'Italiano' },
+  pt: { id: 'pt', name: 'Portuguese', nativeName: 'Português' },
+  ru: { id: 'ru', name: 'Russian', nativeName: 'Русский' },
+  zh: { id: 'zh', name: 'Chinese', nativeName: '中文' },
+  ja: { id: 'ja', name: 'Japanese', nativeName: '日本語' },
+  ko: { id: 'ko', name: 'Korean', nativeName: '한국어' },
+  ar: { id: 'ar', name: 'Arabic', nativeName: 'العربية' },
+  hi: { id: 'hi', name: 'Hindi', nativeName: 'हिन्दी' },
+  el: { id: 'el', name: 'Greek', nativeName: 'Ελληνικά' },
+};
+
+export type LanguageCode = keyof typeof LANGUAGES;
+
+// Define translations
+const translations = {
+  en: {
+    welcome: 'Welcome',
+    home: 'Home',
+    templates: 'Templates',
+    contacts: 'Contacts',
+    history: 'History',
+    settings: 'Settings',
+    bulkSend: 'Bulk Send',
+    createTemplate: 'Create Template',
+    editTemplate: 'Edit Template',
+    createContact: 'Create Contact',
+    editContact: 'Edit Contact',
+    compose: 'Compose',
+    send: 'Send',
+    cancel: 'Cancel',
+    save: 'Save',
+    delete: 'Delete',
+    search: 'Search',
+    name: 'Name',
+    email: 'Email',
+    phone: 'Phone',
+    address: 'Address',
+    subject: 'Subject',
+    content: 'Content',
+    date: 'Date',
+    status: 'Status',
+    actions: 'Actions',
+    profile: 'Profile',
+    language: 'Language',
+    theme: 'Theme',
+    smtp: 'SMTP Settings',
+    logo: 'Logo',
+    banner: 'Banner',
+    deployment: 'Deployment',
+    importContacts: 'Import Contacts',
+    exportContacts: 'Export Contacts',
+    selectTemplate: 'Select Template',
+    selectContact: 'Select Contact',
+    selectAll: 'Select All',
+    deselectAll: 'Deselect All',
+    sent: 'Sent',
+    draft: 'Draft',
+    error: 'Error',
+    success: 'Success',
+    loading: 'Loading',
+    noTemplates: 'No templates found',
+    noContacts: 'No contacts found',
+    noHistory: 'No history found',
+    confirmDelete: 'Are you sure you want to delete this?',
+    yes: 'Yes',
+    no: 'No',
+    dark: 'Dark',
+    light: 'Light',
+    system: 'System',
+    host: 'Host',
+    port: 'Port',
+    username: 'Username',
+    password: 'Password',
+    secure: 'Secure',
+    from: 'From',
+    to: 'To',
+    cc: 'CC',
+    bcc: 'BCC',
+    attachments: 'Attachments',
+    preview: 'Preview',
+    back: 'Back',
+    next: 'Next',
+    finish: 'Finish',
+    step: 'Step',
+    of: 'of',
+    required: 'Required',
+    invalid: 'Invalid',
+    passwordRequired: 'Password is required',
+    emailRequired: 'Email is required',
+    nameRequired: 'Name is required',
+    subjectRequired: 'Subject is required',
+    contentRequired: 'Content is required',
+    invalidEmail: 'Invalid email address',
+    invalidPhone: 'Invalid phone number',
+    invalidUrl: 'Invalid URL',
+    passwordMismatch: 'Passwords do not match',
+    passwordTooShort: 'Password is too short',
+    passwordTooWeak: 'Password is too weak',
+    passwordStrength: 'Password strength',
+    weak: 'Weak',
+    medium: 'Medium',
+    strong: 'Strong',
+    veryStrong: 'Very strong',
+    passwordRequirements: 'Password requirements',
+    passwordRequirement1: 'At least 8 characters',
+    passwordRequirement2: 'At least one uppercase letter',
+    passwordRequirement3: 'At least one lowercase letter',
+    passwordRequirement4: 'At least one number',
+    passwordRequirement5: 'At least one special character',
+    passwordRequirement6: 'No spaces',
+    passwordRequirement7: 'No repeating characters',
+    passwordRequirement8: 'No sequential characters',
+    passwordRequirement9: 'No personal information',
+    passwordRequirement10: 'No common words',
+    smtpConfiguration: 'SMTP Configuration',
+    smtpDescription: 'Configure your SMTP server to send emails directly from the app.',
+    smtpServer: 'SMTP Server',
+    enterSmtpHost: 'Please enter SMTP host',
+    enterValidPort: 'Please enter a valid port number (1-65535)',
+    enterSmtpUsername: 'Please enter SMTP username',
+    enterSmtpPassword: 'Please enter SMTP password',
+    enterSenderName: 'Please enter sender name',
+    enterSenderEmail: 'Please enter sender email',
+    smtpSettingsSaved: 'SMTP settings saved successfully',
+    fromName: 'From Name',
+    fromEmail: 'From Email',
+    useTLS: 'Use TLS/SSL',
+    saveEmailsToHistory: 'Save emails to history',
+    gmailInstructions: 'For Gmail, you need to use an app password. Go to your Google Account > Security > App passwords to generate one.',
+    configured: 'Configured',
+    notConfigured: 'Not configured',
+    uploaded: 'Uploaded',
+    notUploaded: 'Not uploaded',
+    bannerSettings: 'Banner settings',
+    clearHistory: 'Clear History',
+    confirmClearHistory: 'Are you sure you want to clear all email history?',
+    historyCleared: 'Email history cleared successfully',
+    version: 'Version',
+    ok: 'OK',
+    profileDescription: 'Update your profile information. This will be used as the default sender information.',
+    fullName: 'Full Name',
+    company: 'Company',
+    position: 'Position',
+    saveProfile: 'Save Profile',
+    profileUpdated: 'Profile updated successfully',
+    enterName: 'Please enter your name',
+    enterEmail: 'Please enter your email',
+    emailSettings: 'Email Settings',
+    preferences: 'Preferences',
+    dataManagement: 'Data Management',
+    about: 'About',
+    companyLogo: 'Company Logo',
+    companyBanner: 'Company Banner',
+    appearance: 'Appearance',
+  },
+  es: {
+    welcome: 'Bienvenido',
+    home: 'Inicio',
+    templates: 'Plantillas',
+    contacts: 'Contactos',
+    history: 'Historial',
+    settings: 'Configuración',
+    bulkSend: 'Envío masivo',
+    createTemplate: 'Crear plantilla',
+    editTemplate: 'Editar plantilla',
+    createContact: 'Crear contacto',
+    editContact: 'Editar contacto',
+    compose: 'Redactar',
+    send: 'Enviar',
+    cancel: 'Cancelar',
+    save: 'Guardar',
+    delete: 'Eliminar',
+    search: 'Buscar',
+    name: 'Nombre',
+    email: 'Correo electrónico',
+    phone: 'Teléfono',
+    address: 'Dirección',
+    subject: 'Asunto',
+    content: 'Contenido',
+    date: 'Fecha',
+    status: 'Estado',
+    actions: 'Acciones',
+    profile: 'Perfil',
+    language: 'Idioma',
+    theme: 'Tema',
+    smtp: 'Configuración SMTP',
+    logo: 'Logo',
+    banner: 'Banner',
+    deployment: 'Implementación',
+    importContacts: 'Importar contactos',
+    exportContacts: 'Exportar contactos',
+    selectTemplate: 'Seleccionar plantilla',
+    selectContact: 'Seleccionar contacto',
+    selectAll: 'Seleccionar todo',
+    deselectAll: 'Deseleccionar todo',
+    sent: 'Enviado',
+    draft: 'Borrador',
+    error: 'Error',
+    success: 'Éxito',
+    loading: 'Cargando',
+    noTemplates: 'No se encontraron plantillas',
+    noContacts: 'No se encontraron contactos',
+    noHistory: 'No se encontró historial',
+    confirmDelete: '¿Estás seguro de que quieres eliminar esto?',
+    yes: 'Sí',
+    no: 'No',
+  },
+  fr: {
+    welcome: 'Bienvenue',
+    home: 'Accueil',
+    templates: 'Modèles',
+    contacts: 'Contacts',
+    history: 'Historique',
+    settings: 'Paramètres',
+    bulkSend: 'Envoi en masse',
+    createTemplate: 'Créer un modèle',
+    editTemplate: 'Modifier le modèle',
+    createContact: 'Créer un contact',
+    editContact: 'Modifier le contact',
+    compose: 'Composer',
+    send: 'Envoyer',
+    cancel: 'Annuler',
+    save: 'Enregistrer',
+    delete: 'Supprimer',
+    search: 'Rechercher',
+    name: 'Nom',
+    email: 'Email',
+    phone: 'Téléphone',
+    address: 'Adresse',
+    subject: 'Sujet',
+    content: 'Contenu',
+    date: 'Date',
+    status: 'Statut',
+    actions: 'Actions',
+    profile: 'Profil',
+    language: 'Langue',
+    theme: 'Thème',
+    smtp: 'Paramètres SMTP',
+    logo: 'Logo',
+    banner: 'Bannière',
+    deployment: 'Déploiement',
+    importContacts: 'Importer des contacts',
+    exportContacts: 'Exporter des contacts',
+    selectTemplate: 'Sélectionner un modèle',
+    selectContact: 'Sélectionner un contact',
+    selectAll: 'Tout sélectionner',
+    deselectAll: 'Tout désélectionner',
+    sent: 'Envoyé',
+    draft: 'Brouillon',
+    error: 'Erreur',
+    success: 'Succès',
+    loading: 'Chargement',
+    noTemplates: 'Aucun modèle trouvé',
+    noContacts: 'Aucun contact trouvé',
+    noHistory: 'Aucun historique trouvé',
+    confirmDelete: 'Êtes-vous sûr de vouloir supprimer ceci?',
+    yes: 'Oui',
+    no: 'Non',
+  },
+  el: {
+    welcome: 'Καλώς ήρθατε',
+    home: 'Αρχική',
+    templates: 'Πρότυπα',
+    contacts: 'Επαφές',
+    history: 'Ιστορικό',
+    settings: 'Ρυθμίσεις',
+    bulkSend: 'Μαζική αποστολή',
+    createTemplate: 'Δημιουργία προτύπου',
+    editTemplate: 'Επεξεργασία προτύπου',
+    createContact: 'Δημιουργία επαφής',
+    editContact: 'Επεξεργασία επαφής',
+    compose: 'Σύνθεση',
+    send: 'Αποστολή',
+    cancel: 'Ακύρωση',
+    save: 'Αποθήκευση',
+    delete: 'Διαγραφή',
+    search: 'Αναζήτηση',
+    name: 'Όνομα',
+    email: 'Email',
+    phone: 'Τηλέφωνο',
+    address: 'Διεύθυνση',
+    subject: 'Θέμα',
+    content: 'Περιεχόμενο',
+    date: 'Ημερομηνία',
+    status: 'Κατάσταση',
+    actions: 'Ενέργειες',
+    profile: 'Προφίλ',
+    language: 'Γλώσσα',
+    theme: 'Θέμα',
+    smtp: 'Ρυθμίσεις SMTP',
+    logo: 'Λογότυπο',
+    banner: 'Πανό',
+    deployment: 'Ανάπτυξη',
+    importContacts: 'Εισαγωγή επαφών',
+    exportContacts: 'Εξαγωγή επαφών',
+    selectTemplate: 'Επιλογή προτύπου',
+    selectContact: 'Επιλογή επαφής',
+    selectAll: 'Επιλογή όλων',
+    deselectAll: 'Αποεπιλογή όλων',
+    sent: 'Απεσταλμένο',
+    draft: 'Πρόχειρο',
+    error: 'Σφάλμα',
+    success: 'Επιτυχία',
+    loading: 'Φόρτωση',
+    noTemplates: 'Δεν βρέθηκαν πρότυπα',
+    noContacts: 'Δεν βρέθηκαν επαφές',
+    noHistory: 'Δεν βρέθηκε ιστορικό',
+    confirmDelete: 'Είστε βέβαιοι ότι θέλετε να διαγράψετε αυτό;',
+    yes: 'Ναι',
+    no: 'Όχι',
+    smtpConfiguration: 'Ρύθμιση SMTP',
+    smtpDescription: 'Ρυθμίστε τον διακομιστή SMTP για να στέλνετε emails απευθείας από την εφαρμογή.',
+    smtpServer: 'Διακομιστής SMTP',
+    enterSmtpHost: 'Παρακαλώ εισάγετε διακομιστή SMTP',
+    enterValidPort: 'Παρακαλώ εισάγετε έγκυρο αριθμό θύρας (1-65535)',
+    enterSmtpUsername: 'Παρακαλώ εισάγετε όνομα χρήστη SMTP',
+    enterSmtpPassword: 'Παρακαλώ εισάγετε κωδικό SMTP',
+    enterSenderName: 'Παρακαλώ εισάγετε όνομα αποστολέα',
+    enterSenderEmail: 'Παρακαλώ εισάγετε email αποστολέα',
+    smtpSettingsSaved: 'Οι ρυθμίσεις SMTP αποθηκεύτηκαν επιτυχώς',
+    fromName: 'Όνομα Αποστολέα',
+    fromEmail: 'Email Αποστολέα',
+    useTLS: 'Χρήση TLS/SSL',
+    saveEmailsToHistory: 'Αποθήκευση emails στο ιστορικό',
+    gmailInstructions: 'Για το Gmail, χρειάζεστε κωδικό εφαρμογής. Πηγαίνετε στον Λογαριασμό Google > Ασφάλεια > Κωδικοί εφαρμογών για να δημιουργήσετε έναν.',
+    configured: 'Ρυθμισμένο',
+    notConfigured: 'Μη ρυθμισμένο',
+    uploaded: 'Μεταφορτωμένο',
+    notUploaded: 'Μη μεταφορτωμένο',
+    bannerSettings: 'Ρυθμίσεις πανό',
+    clearHistory: 'Εκκαθάριση Ιστορικού',
+    confirmClearHistory: 'Είστε βέβαιοι ότι θέλετε να διαγράψετε όλο το ιστορικό email;',
+    historyCleared: 'Το ιστορικό email διαγράφηκε επιτυχώς',
+    version: 'Έκδοση',
+    ok: 'Εντάξει',
+    profileDescription: 'Ενημερώστε τις πληροφορίες του προφίλ σας. Αυτές θα χρησιμοποιηθούν ως προεπιλεγμένες πληροφορίες αποστολέα.',
+    fullName: 'Πλήρες Όνομα',
+    company: 'Εταιρεία',
+    position: 'Θέση',
+    saveProfile: 'Αποθήκευση Προφίλ',
+    profileUpdated: 'Το προφίλ ενημερώθηκε επιτυχώς',
+    enterName: 'Παρακαλώ εισάγετε το όνομά σας',
+    enterEmail: 'Παρακαλώ εισάγετε το email σας',
+    emailSettings: 'Ρυθμίσεις Email',
+    preferences: 'Προτιμήσεις',
+    dataManagement: 'Διαχείριση Δεδομένων',
+    about: 'Σχετικά',
+  }
+};
+
+// Create i18n instance
+const i18n = new I18n(translations);
+
+// Set the locale once at the beginning of your app
+i18n.locale = Localization.locale.split('-')[0];
+i18n.enableFallback = true;
+i18n.defaultLocale = 'en';
+
+// Create context
+interface I18nContextType {
+  t: (scope: string, options?: object) => string;
+  locale: string;
+  setLocale: (locale: LanguageCode) => void;
+  availableLanguages: typeof LANGUAGES;
+}
+
+const I18nContext = createContext<I18nContextType | undefined>(undefined);
+
+// Create provider
+interface I18nProviderProps {
+  children: ReactNode;
+}
+
+export const I18nProvider = ({ children }: I18nProviderProps) => {
+  const [locale, setLocaleState] = useState<string>(i18n.locale);
+
+  // Load saved locale on mount
+  useEffect(() => {
+    const loadSavedLocale = async () => {
+      try {
+        const savedLocale = await AsyncStorage.getItem('userLocale');
+        if (savedLocale && Object.keys(LANGUAGES).includes(savedLocale)) {
+          setLocale(savedLocale as LanguageCode);
+        }
+      } catch (error) {
+        console.error('Failed to load saved locale:', error);
+      }
+    };
+
+    loadSavedLocale();
+  }, []);
+
+  // Set locale function
+  const setLocale = async (newLocale: LanguageCode) => {
+    i18n.locale = newLocale;
+    setLocaleState(newLocale);
+    
+    try {
+      await AsyncStorage.setItem('userLocale', newLocale);
+    } catch (error) {
+      console.error('Failed to save locale:', error);
+    }
+  };
+
+  // Translation function
+  const t = (scope: string, options?: object) => {
+    return i18n.t(scope, options);
+  };
+
+  const value = {
+    t,
+    locale,
+    setLocale,
+    availableLanguages: LANGUAGES,
+  };
+  
+  return (
+    <I18nContext.Provider value={value}>
+      {children}
+    </I18nContext.Provider>
+  );
+};
+
+// Create hook
+export const useI18n = () => {
+  const context = useContext(I18nContext);
+  if (context === undefined) {
+    throw new Error('useI18n must be used within an I18nProvider');
+  }
+  return context;
+};
+
+// Load saved locale
+export const loadSavedLocale = async () => {
+  try {
+    const savedLocale = await AsyncStorage.getItem('userLocale');
+    if (savedLocale && Object.keys(LANGUAGES).includes(savedLocale)) {
+      i18n.locale = savedLocale;
+    }
+  } catch (error) {
+    console.error('Failed to load saved locale:', error);
+  }
+};
